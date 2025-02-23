@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLICO Promotion Reservation System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="date"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h1>FLICO Promotion Reservation System</h1>
+  <form id="bookingForm">
+    <label for="branchCode">Type your branch code:</label>
+    <input type="text" id="branchCode" required />
+
+    <label for="bookingDate">Booking date:</label>
+    <input type="date" id="bookingDate" required />
+
+    <label for="place">Place:</label>
+    <input type="text" id="place" required />
+
+    <button type="submit">Book</button>
+  </form>
+
+  <table id="bookingsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Branch Code</th>
+        <th>Booking Date</th>
+        <th>Place</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="downloadBtn" style="margin-top: 20px;">Download Bookings as Excel</button>
+
+  <script>
+    const bookings = {};
+
+    document.getElementById('bookingForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const branchCode = document.getElementById('branchCode').value.trim();
+      const date = document.getElementById('bookingDate').value;
+      const place = document.getElementById('place').value.trim();
+
+      if (!date) {
+        alert('Please select a booking date.');
+        return;
+      }
+
+      bookings[date] = bookings[date] ? bookings[date] + 1 : 1;
+
+      if (bookings[date] > 5) {
+        alert('Limit over, book another day.');
+        bookings[date] = 5; // Prevent count from increasing further
+      } else {
+        alert('Booking successful!');
+        addBookingToTable(branchCode, date, place);
+        document.getElementById('bookingForm').reset();
+      }
+    });
+
+    function addBookingToTable(branchCode, date, place) {
+      const table = document.getElementById('bookingsTable');
+      const tbody = table.querySelector('tbody');
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${branchCode}</td>
+        <td>${date}</td>
+        <td>${place}</td>
+      `;
+      tbody.appendChild(row);
+
+      table.style.display = 'table'; // Show table when booking is added
+    }
+
+    // Excel export functionality
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      const table = document.getElementById('bookingsTable');
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Bookings" });
+
+      // Create a file and download it
+      XLSX.writeFile(wb, 'bookings.xlsx');
+    });
+  </script>
+</body>
+</html>
